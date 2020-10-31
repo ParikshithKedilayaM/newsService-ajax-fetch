@@ -1,5 +1,6 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
+    session = require('express-session'),
     NewsService = require('./NewsService');
 
 const api = express(),
@@ -19,6 +20,16 @@ const ROOT_ENDPOINT = '/',
 // Inititialize body-parser middleware
 api.use(bodyParser.urlencoded({ extended: true }));
 api.use(bodyParser.json());
+
+// Initialize session management middleware
+api.use(session({
+    secret: 'MAGICALEXPRESSKEY',
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 3 * 60 * 1000
+    }
+}));
 
 api.get(ROOT_ENDPOINT, (req, res) => {
     res.send('Hello World!');
@@ -42,7 +53,7 @@ api.patch(EDIT_CONTENT_ENDPOINT, (req, res) => {
     res.send('Updated content');
 });
 
-api.post(DELETE_ENDPOINT, (req, res) => {
+api.delete(DELETE_ENDPOINT, (req, res) => {
     var { id } = req.body;
     newsService.deleteStory(id);
     res.send('Story deleted');
@@ -54,12 +65,19 @@ api.get(SEARCH_ENDPOINT, (req, res) => {
     res.send(stories);
 });
 
-api.get(LOGIN_ENDPOINT, (req, res) => {
-    
+api.post(LOGIN_ENDPOINT, (req, res) => {
+    if (req.body.username === req.body.password) {
+        req.session.username = req.body.username;
+        req.session.role = req.body.role;
+        res.send('Login Successful');
+    } else {
+        res.send('Login Failed');
+    }
 });
 
-api.get(LOGOUT_ENDPOINT, (req, res) => {
-
+api.post(LOGOUT_ENDPOINT, (req, res) => {
+    req.session.destroy();
+    res.send('Logged out');
 });
 
 api.all('*', (req, res, next) => {
