@@ -1,0 +1,11 @@
+{
+  "name": "lab5start",
+  "version": "1.0.0",
+  "description": "Activity 1",
+  "main": "NewsService.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
