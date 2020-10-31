@@ -1,48 +1,83 @@
-const express = require('express');
+const express = require('express'),
+    bodyParser = require('body-parser'),
+    NewsService = require('./NewsService');
 
-const api = express();
+const api = express(),
+    newsService = new NewsService();
 
-api.get('/', (req, res) => {
+const ROOT_ENDPOINT = '/',
+    CREATE_ENDPOINT = '/create',
+    EDIT_TITLE_ENDPOINT = '/editTitle',
+    EDIT_CONTENT_ENDPOINT = '/editContent',
+    DELETE_ENDPOINT = '/delete',
+    SEARCH_ENDPOINT = '/search',
+    LOGIN_ENDPOINT = '/login',
+    LOGOUT_ENDPOINT = '/logout',
+    ERROR404 = '404: Page Not Found',
+    ERROR500 = '500: Internal Server Error';
+
+// Inititialize body-parser middleware
+api.use(bodyParser.urlencoded({ extended: true }));
+api.use(bodyParser.json());
+
+api.get(ROOT_ENDPOINT, (req, res) => {
     res.send('Hello World!');
 });
 
-api.post('/create', (req, res) => {
-
+api.post(CREATE_ENDPOINT, (req, res) => {
+    var { title, content, author, isPublic, date } = req.body;
+    var id = newsService.addStory(title, content, author, isPublic, date);
+    res.send('Story created with id = ' + id);
 });
 
-api.post('/editTitle', (req, res) => {
-
+api.patch(EDIT_TITLE_ENDPOINT, (req, res) => {
+    var { id, title } = req.body;
+    newsService.updateTitle(id, title);
+    res.send('Updated title');
 });
 
-api.post('/editContent', (req, res) => {
-
+api.patch(EDIT_CONTENT_ENDPOINT, (req, res) => {
+    var { id, content } = req.body;
+    newsService.updateTitle(id, content);
+    res.send('Updated content');
 });
 
-api.post('/delete', (req, res) => {
-
+api.post(DELETE_ENDPOINT, (req, res) => {
+    var { id } = req.body;
+    newsService.deleteStory(id);
+    res.send('Story deleted');
 });
 
-api.post('/search', (req, res) => {
-
+api.get(SEARCH_ENDPOINT, (req, res) => {
+    var filter = constructObject(req.query);
+    var stories = newsService.getStoriesForFilter(filter);
+    res.send(stories);
 });
 
-api.get('/login', (req, res) => {
-
+api.get(LOGIN_ENDPOINT, (req, res) => {
+    
 });
 
-api.get('/logout', (req, res) => {
+api.get(LOGOUT_ENDPOINT, (req, res) => {
 
 });
 
 api.all('*', (req, res, next) => {
     res.status(404);
-    res.send('404: Page not found');
+    res.send(ERROR404);
 });
 
 api.use((err, req, res, next) => {
     console.error(err);
     res.status(500);
-    res.send('500: Internal Server Error');
+    res.send(ERROR500);
 });
 
 api.listen(3000);
+
+function constructObject(filter) {
+    if (filter.dateRange !== undefined) {
+        filter.dateRange = JSON.parse(filter.dateRange);
+    }
+    return filter;
+}
