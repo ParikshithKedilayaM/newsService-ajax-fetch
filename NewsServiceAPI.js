@@ -1,12 +1,16 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
-    NewsService = require('./NewsService');
+    NewsService = require('./NewsService'),
+    fs = require('fs');
 
 const api = express(),
-    newsService = new NewsService();
+    newsService = new NewsService(),
+    index = fs.readFileSync('index.html'),
+    js = fs.readFileSync('index.js');
 
 const ROOT_ENDPOINT = '/',
+    JS_ENDPOINT = '/index.js'
     CREATE_ENDPOINT = '/create',
     EDIT_TITLE_ENDPOINT = '/editTitle',
     EDIT_CONTENT_ENDPOINT = '/editContent',
@@ -31,8 +35,21 @@ api.use(session({
     }
 }));
 
+api.use((req, res, next) => {
+    res.append('Access-Control-Allow-Origin', ['*']);
+    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.append('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+
 api.get(ROOT_ENDPOINT, (req, res) => {
-    res.send('Hello World!');
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(index);
+});
+
+api.get(JS_ENDPOINT, (req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/javascript'});
+    res.end(js);
 });
 
 api.post(CREATE_ENDPOINT, (req, res) => {
@@ -69,9 +86,11 @@ api.post(LOGIN_ENDPOINT, (req, res) => {
     if (req.body.username === req.body.password) {
         req.session.username = req.body.username;
         req.session.role = req.body.role;
-        res.send('Login Successful');
+        res.status(200);
+        res.send();
     } else {
-        res.send('Login Failed');
+        res.status(401);
+        res.end();
     }
 });
 
