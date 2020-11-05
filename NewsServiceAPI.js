@@ -80,7 +80,7 @@ api.patch(EDIT_TITLE_ENDPOINT, (req, res) => {
 
 api.patch(EDIT_CONTENT_ENDPOINT, (req, res) => {
     var { id, content } = req.body;
-    newsService.updateTitle(id, content);
+    newsService.updateContent(id, content);
     res.send('Updated content');
 });
 
