@@ -81,6 +81,10 @@ function getNewsFromStorage() {
     return news && JSON.parse(news);
 }
 
+function errorHandler(err) {
+    console.error(err);
+}
+
 // DOM modification functions
 
 function setContent(content) {
@@ -160,15 +164,17 @@ function logoutAPI() {
     fetch(HOST + LOGOUT_ENDPOINT, {
         method: 'POST'
     })
+    .then((res) => handleError(res))
     .then(() => redirectToLogin())
-    .catch((err) => console.error(err));
+    .catch((err) => errorHandler(err));
 }
 
 function newsListAPI() {
     fetch(HOST + SEARCH_ENDPOINT)
+    .then((res) => handleError(res))
     .then((res) => res.json())
     .then((data) => createNewsList(data))
-    .catch((err) => console.error(err));
+    .catch((err) => errorHandler(err));
 }
 
 function deleteNewsAPI(news, id) {
@@ -183,8 +189,9 @@ function deleteNewsAPI(news, id) {
         },
         body: JSON.stringify({ id })
     })
+    .then((res) => handleError(res))
     .then(() => newsListAPI())
-    .catch(() => setFailedDeleteMessage());
+    .catch((err) => errorHandler(err), setFailedDeleteMessage());
 }
 
 function createNewsAPI(body) {
@@ -198,6 +205,15 @@ function createNewsAPI(body) {
         },
         body: JSON.stringify(body)
     })
+    .then((res) => handleError(res))
     .then(() => newsListAPI())
-    .catch((err) => console.error(err));
+    .catch((err) => errorHandler(err));
+}
+
+function handleError(res) {
+    if (!res.ok) {
+        if (res.status === 401) redirectToLogin();
+        throw Error(res.statusText);
+    }
+    return res;
 }
