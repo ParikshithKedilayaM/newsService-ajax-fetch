@@ -31,16 +31,36 @@ function loadNewsList() {
 }
 
 function viewNews(id) {
-    let newsList = sessionStorage.getItem('_news');
-    let news = newsList && JSON.parse(newsList);
+    let news = getNewsFromStorage();
     if (news[id] && news[id].content) {
-        renderNews(news[id]);
+        renderNews(id, news[id]);
+    }
+}
+
+function createNewsList(news) {
+    renderNewsList(news);
+    sessionStorage.setItem('_news', JSON.stringify(news));
+}
+
+function reRenderNewsList() {
+    renderNewsList(getNewsFromStorage());
+}
+
+function deleteNews(id) {
+    var news = getNewsFromStorage();
+    if (ROLE === 'author' && USERNAME === news[id].author) {
+        deleteNewsAPI(news, id);
     }
 }
 
 function redirectToLogin() {
     sessionStorage.clear();
     window.location.replace('/');
+}
+
+function getNewsFromStorage() {
+    var news = sessionStorage.getItem('_news');
+    return news && JSON.parse(news);
 }
 
 // HTML creators
@@ -58,21 +78,32 @@ function renderNewsList(news) {
             news[story] = { title: news[story].title }
             newsList += `<p>${news[story].title}</p>`;
         } else {
-            newsList += `<p><a href="#" onclick="viewNews(${story})">${news[story].title}</a></p>`;
+            newsList += `<p><a href="#" onclick="viewNews(${story}); return false;">${news[story].title}</a></p>`;
         }
     }
     setContent(newsList);
-    sessionStorage.setItem('_news', JSON.stringify(news));
 }
 
-function renderNews(news) {
-    var news = `<hr><h2>${news.title}</h2>
+function renderNews(id, news) {
+    var newsString = `<hr>
+    <h2>${news.title}</h2>
     <i> Written by: ${news.author} </i> <br />
     <i> Published on ${news.date} </i>
     <br />
     
-    <p>${news.content}</p><br />`
-    setContent(news);
+    <p>${news.content}</p><br />
+    <div id="message"></div>`;
+    if (news.author === USERNAME && ROLE === 'author') {
+        newsString += `<input type="button" onclick="deleteNews(${id});" value="Delete">`;
+    }
+    setContent(newsString);
+}
+
+function setFailedDeleteMessage() {
+    var message = document.getElementById('message');
+    if (message !== undefined || message !== null) {
+        message.innerText = 'Failed to delete news. Try again!';
+    }
 }
 
 // API calls
@@ -88,6 +119,26 @@ function logoutAPI() {
 function newsListAPI() {
     fetch(HOST + SEARCH_ENDPOINT)
     .then((res) => res.json())
-    .then((data) => renderNewsList(data))
+    .then((data) => createNewsList(data))
     .catch((err) => console.error(err));
+}
+
+function deleteNewsAPI(news, id) {
+    if (ROLE !== 'author' || USERNAME !== news[id].author) {
+        setFailedDeleteMessage();
+        return;
+    }
+    fetch(HOST + DELETE_ENDPOINT, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(() => {
+        delete news[id];
+        sessionStorage.setItem('_news', JSON.stringify(news));
+        reRenderNewsList();
+    })
+    .catch(() => setFailedDeleteMessage());
 }
