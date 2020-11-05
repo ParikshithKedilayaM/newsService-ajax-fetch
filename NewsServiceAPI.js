@@ -7,10 +7,14 @@ const express = require('express'),
 const api = express(),
     newsService = new NewsService(),
     index = fs.readFileSync('index.html'),
-    js = fs.readFileSync('index.js');
+    indexjs = fs.readFileSync('index.js'),
+    newsjs = fs.readFileSync('news.js'),
+    news = fs.readFileSync('news.html');
 
 const ROOT_ENDPOINT = '/',
-    JS_ENDPOINT = '/index.js'
+    INDEXJS_ENDPOINT = '/index.js',
+    NEWS_ENDPOINT = '/news',
+    NEWSJS_ENDPOINT = '/news.js',
     CREATE_ENDPOINT = '/create',
     EDIT_TITLE_ENDPOINT = '/editTitle',
     EDIT_CONTENT_ENDPOINT = '/editContent',
@@ -37,7 +41,7 @@ api.use(session({
 
 api.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
-    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH');
     res.append('Access-Control-Allow-Headers', 'Content-Type');
     next();
 });
@@ -47,9 +51,19 @@ api.get(ROOT_ENDPOINT, (req, res) => {
     res.end(index);
 });
 
-api.get(JS_ENDPOINT, (req, res) => {
+api.get(INDEXJS_ENDPOINT, (req, res) => {
     res.writeHead(200, {'Content-Type': 'text/javascript'});
-    res.end(js);
+    res.end(indexjs);
+});
+
+api.get(NEWS_ENDPOINT, (req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(news);
+});
+
+api.get(NEWSJS_ENDPOINT, (req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/javascript'});
+    res.end(newsjs);
 });
 
 api.post(CREATE_ENDPOINT, (req, res) => {
@@ -87,7 +101,7 @@ api.post(LOGIN_ENDPOINT, (req, res) => {
         req.session.username = req.body.username;
         req.session.role = req.body.role;
         res.status(200);
-        res.send();
+        res.end();
     } else {
         res.status(401);
         res.end();

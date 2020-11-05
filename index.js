@@ -23,10 +23,6 @@ function getSelectedRadioButton(className) {
     }
 }
 
-function logout() {
-    logoutAPI();
-}
-
 function setContent(content) {
     document.getElementById('content').innerHTML = content;
 }
@@ -36,30 +32,23 @@ function setHeader(header) {
 }
 
 function setFailedLoginMessage() {
-    document.getElementById('message').innerText = 'Incorrect Username/Password. Try again!';
+    var loginFailure = `<p>Incorrect Username/Password. Try again</p>
+    <a href="#" onclick="loginForm(); return false;">Click here to login...</a>`;
+    setContent(loginFailure);
 }
 
 // HTML creators
 function loginForm() {
-    var loginForm = `
+    var loginForm = `<form onsubmit='event.preventDefault(); login();'>
         Username: <input type='text' value='' placeholder='Enter name here' id='username' required><br>
-        Password: <input type='password' value='' id='password' required><br>
+        Password: <input type='password' value='' placeholder='Enter password' id='password' required><br>
         Role: <input type='radio' value='guest' name='role' checked>Guest
         <input type='radio' value='author' name='role'>Author
         <input type='radio' value='subscriber' name='role'>Subscriber<br>
         <p id='message'></p>
-        <input type='submit' id='submit'value='Login' onclick='login()'><br>`;
+        <input type='submit' id='submit'value='Login'><br>
+        </form>`;
     setContent(loginForm);
-}
-
-function displayHeader(username, role) {
-    var header = `<div><p>Welcome ${username}. You are logged in as ${role}.</p></div><p></p>
-    <div><input type='button' onclick='logout()' value='Logout'></div>`
-    setHeader(header);
-}
-
-function dashboard(username, role) {
-    setContent('');
 }
 
 // API calls
@@ -77,23 +66,11 @@ function loginAPI(username, password, role) {
     })
     .then((res) => {
         if (res.ok) {
-            displayHeader(username, role),
-            dashboard(username, role)
+            sessionStorage.setItem('_username', username);
+            sessionStorage.setItem('_role', role);
+            window.location.replace('/news');
         } else {
             setFailedLoginMessage();
-        }
-    })
-    .catch((err) => console.error(err));
-}
-
-function logoutAPI() {
-    fetch(HOST + LOGOUT_ENDPOINT, {
-        method: 'POST'
-    })
-    .then((res) => {
-        if (res.ok) {
-            setHeader('');
-            loginForm();
         }
     })
     .catch((err) => console.error(err));
