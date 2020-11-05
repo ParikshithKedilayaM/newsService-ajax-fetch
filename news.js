@@ -51,6 +51,26 @@ function newsForm() {
     }
 }
 
+function createNews() {
+    if (ROLE !== 'author') {
+        return;
+    }
+    var title = document.getElementById('title').value;
+    var content = document.getElementById('storyContent').value;
+    var date = document.getElementById('date').value;
+    var isPublic = getSelectedRadioButton('isPublic') === 'true';
+    createNewsAPI({ title, content, author: USERNAME, isPublic, date });
+}
+
+function getSelectedRadioButton(className) {
+    var options = document.getElementsByName(className);
+    for (option of options) {
+        if (option.checked) {
+            return option.value;
+        }
+    }
+}
+
 function redirectToLogin() {
     sessionStorage.clear();
     window.location.replace('/');
@@ -73,7 +93,7 @@ function setHeader(header) {
 
 function displayHeader() {
     var header = `<div><p>Welcome ${USERNAME}. You are logged in as ${ROLE}.</p></div><p></p>
-    <div><input type='button' onclick='logout()' value='Logout'></div>`
+    <div><input type='button' onclick='logout()' value='Logout'></div><hr>`
     setHeader(header);
 }
 
@@ -94,7 +114,7 @@ function renderNewsList(news) {
 }
 
 function renderNews(id, news) {
-    var newsString = `<hr>
+    var newsString = `
     <h2>${news.title}</h2>
     <i> Written by: ${news.author} </i> <br />
     <i> Published on ${news.date} </i>
@@ -116,7 +136,22 @@ function setFailedDeleteMessage() {
 }
 
 function renderCreateNewsForm() {
-    console.log("// TODO");
+    var newsForm = `<h2>Enter the story below</h2>
+        <form onsubmit='event.preventDefault(); createNews();'>
+            <label>Title:</label> <input type="text" id="title" /><br />
+            <label>Content:</label> <br /><textarea id="storyContent" ></textarea><br />
+            <label>Public?</label> 
+            <input type="radio" name="isPublic" value="true" checked />Yes
+            <input type="radio" name="isPublic" value="false" />No
+            <br />
+            <label>Date: </label><input type="datetime-local" id="date" required />
+            <br />
+            <input type="submit" value="Save" />
+        </form>
+        <form onsubmit='event.preventDefault(); reRenderNewsList();'>
+            <button type="submit" >Cancel</button>
+        </form>`;
+    setContent(newsForm);
 }
 
 // API calls - fetch
@@ -148,10 +183,21 @@ function deleteNewsAPI(news, id) {
         },
         body: JSON.stringify({ id })
     })
-    .then(() => {
-        delete news[id];
-        sessionStorage.setItem('_news', JSON.stringify(news));
-        reRenderNewsList();
-    })
+    .then(() => newsListAPI())
     .catch(() => setFailedDeleteMessage());
+}
+
+function createNewsAPI(body) {
+    if (ROLE !== 'author') {
+        return;
+    }
+    fetch(HOST + CREATE_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    })
+    .then(() => newsListAPI())
+    .catch((err) => console.error(err));
 }
