@@ -14,14 +14,6 @@ function initializeContent() {
     loadNewsList();
 }
 
-function setContent(content) {
-    document.getElementById('content').innerHTML = content;
-}
-
-function setHeader(header) {
-    document.getElementById('header').innerHTML = header;
-}
-
 function logout() {
     logoutAPI();
 }
@@ -53,6 +45,12 @@ function deleteNews(id) {
     }
 }
 
+function newsForm() {
+    if (ROLE === 'author') {
+        renderCreateNewsForm();
+    }
+}
+
 function redirectToLogin() {
     sessionStorage.clear();
     window.location.replace('/');
@@ -63,7 +61,15 @@ function getNewsFromStorage() {
     return news && JSON.parse(news);
 }
 
-// HTML creators
+// DOM modification functions
+
+function setContent(content) {
+    document.getElementById('content').innerHTML = content;
+}
+
+function setHeader(header) {
+    document.getElementById('header').innerHTML = header;
+}
 
 function displayHeader() {
     var header = `<div><p>Welcome ${USERNAME}. You are logged in as ${ROLE}.</p></div><p></p>
@@ -73,6 +79,9 @@ function displayHeader() {
 
 function renderNewsList(news) {
     var newsList = '';
+    if (ROLE === 'author') {
+        newsList = `<div><input type="button" onclick="newsForm()" value="Create News"></div>`;
+    }
     for (let story in news) {
         if (!news[story].isPublic && (ROLE === 'guest' || (ROLE === 'author' && USERNAME !== news[story].author))) {
             news[story] = { title: news[story].title }
@@ -106,7 +115,11 @@ function setFailedDeleteMessage() {
     }
 }
 
-// API calls
+function renderCreateNewsForm() {
+    console.log("// TODO");
+}
+
+// API calls - fetch
 
 function logoutAPI() {
     fetch(HOST + LOGOUT_ENDPOINT, {
