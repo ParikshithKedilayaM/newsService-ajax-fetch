@@ -22,8 +22,9 @@ const ROOT_ENDPOINT = '/',
     SEARCH_ENDPOINT = '/search',
     LOGIN_ENDPOINT = '/login',
     LOGOUT_ENDPOINT = '/logout',
-    ERROR404 = '404: Page Not Found',
-    ERROR500 = '500: Internal Server Error';
+    ERROR404 = '404: Resource Not Found',
+    ERROR500 = '500: Internal Server Error',
+    NEWS_STORY_NOT_FOUND = 'NewsStoryNotFound';
 
 // Inititialize body-parser middleware
 api.use(bodyParser.urlencoded({ extended: true }));
@@ -74,20 +75,44 @@ api.post(CREATE_ENDPOINT, (req, res) => {
 
 api.patch(EDIT_TITLE_ENDPOINT, (req, res) => {
     var { id, title } = req.body;
-    newsService.updateTitle(id, title);
-    res.send('Updated title');
+    try {
+        newsService.updateTitle(id, title);
+        res.send('Updated title');
+    } catch (err) {
+        if (err.message.includes(NEWS_STORY_NOT_FOUND)) {
+            res.status(404).send(ERROR404);
+        } else {
+            throw err;
+        }
+    }
 });
 
 api.patch(EDIT_CONTENT_ENDPOINT, (req, res) => {
     var { id, content } = req.body;
-    newsService.updateContent(id, content);
-    res.send('Updated content');
+    try {
+        newsService.updateContent(id, content);
+        res.send('Updated content');
+    } catch (err) {
+        if (err.message.includes(NEWS_STORY_NOT_FOUND)) {
+            res.status(404).send(ERROR404);
+        } else {
+            throw err;
+        }
+    }
 });
 
 api.delete(DELETE_ENDPOINT, (req, res) => {
     var { id } = req.body;
-    newsService.deleteStory(id);
-    res.send('Story deleted');
+    try {
+        newsService.deleteStory(id);
+        res.send('Story deleted');
+    } catch (err) {
+        if (err.message.includes(NEWS_STORY_NOT_FOUND)) {
+            res.status(404).send(ERROR404);
+        } else {
+            throw err;
+        }
+    }
 });
 
 api.get(SEARCH_ENDPOINT, (req, res) => {
@@ -127,8 +152,11 @@ api.use((err, req, res, next) => {
 api.listen(3000);
 
 function constructObject(filter) {
-    if (filter.dateRange !== undefined) {
-        filter.dateRange = JSON.parse(filter.dateRange);
+    if (filter.startDate !== undefined || filter.endDate !== undefined) {
+        filter['dateRange'] = { 
+            startDate: filter.startDate,
+            endDate: filter.endDate 
+        };
     }
     return filter;
 }
