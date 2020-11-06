@@ -70,7 +70,7 @@ api.get(NEWSJS_ENDPOINT, (req, res) => {
 api.post(CREATE_ENDPOINT, (req, res) => {
     var { title, content, author, isPublic, date } = req.body;
     var id = newsService.addStory(title, content, author, isPublic, date);
-    res.send('Story created with id = ' + id);
+    res.status(201).send('Story created with id = ' + id);
 });
 
 api.patch(EDIT_TITLE_ENDPOINT, (req, res) => {
@@ -116,9 +116,14 @@ api.delete(DELETE_ENDPOINT, (req, res) => {
 });
 
 api.get(SEARCH_ENDPOINT, (req, res) => {
-    var filter = constructObject(req.query);
-    var stories = newsService.getStoriesForFilter(filter);
-    res.send(stories);
+    try {
+        var filter = constructObject(req.query);
+        var stories = newsService.getStoriesForFilter(filter);
+        res.send(stories);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+    
 });
 
 api.post(LOGIN_ENDPOINT, (req, res) => {
