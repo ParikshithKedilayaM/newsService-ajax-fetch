@@ -24,6 +24,7 @@ const ROOT_ENDPOINT = '/',
     LOGOUT_ENDPOINT = '/logout',
     ERROR404 = '404: Resource Not Found',
     ERROR500 = '500: Internal Server Error',
+    ERROR401 = '401: User Logged Out / Not Logged In. Please Login!',
     NEWS_STORY_NOT_FOUND = 'NewsStoryNotFound';
 
 // Inititialize body-parser middleware
@@ -57,23 +58,23 @@ api.get(INDEXJS_ENDPOINT, (req, res) => {
     res.end(indexjs);
 });
 
-api.get(NEWS_ENDPOINT, (req, res) => {
+api.get(NEWS_ENDPOINT, authenticate, (req, res) => {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(news);
 });
 
-api.get(NEWSJS_ENDPOINT, (req, res) => {
+api.get(NEWSJS_ENDPOINT, authenticate, (req, res) => {
     res.writeHead(200, {'Content-Type': 'text/javascript'});
     res.end(newsjs);
 });
 
-api.post(CREATE_ENDPOINT, (req, res) => {
+api.post(CREATE_ENDPOINT, authenticate, (req, res) => {
     var { title, content, author, isPublic, date } = req.body;
     var id = newsService.addStory(title, content, author, isPublic, date);
     res.status(201).send('Story created with id = ' + id);
 });
 
-api.patch(EDIT_TITLE_ENDPOINT, (req, res) => {
+api.patch(EDIT_TITLE_ENDPOINT, authenticate, (req, res) => {
     var { id, title } = req.body;
     try {
         newsService.updateTitle(id, title);
@@ -87,7 +88,7 @@ api.patch(EDIT_TITLE_ENDPOINT, (req, res) => {
     }
 });
 
-api.patch(EDIT_CONTENT_ENDPOINT, (req, res) => {
+api.patch(EDIT_CONTENT_ENDPOINT, authenticate, (req, res) => {
     var { id, content } = req.body;
     try {
         newsService.updateContent(id, content);
@@ -101,7 +102,7 @@ api.patch(EDIT_CONTENT_ENDPOINT, (req, res) => {
     }
 });
 
-api.delete(DELETE_ENDPOINT, (req, res) => {
+api.delete(DELETE_ENDPOINT, authenticate, (req, res) => {
     var { id } = req.body;
     try {
         newsService.deleteStory(id);
@@ -115,7 +116,7 @@ api.delete(DELETE_ENDPOINT, (req, res) => {
     }
 });
 
-api.get(SEARCH_ENDPOINT, (req, res) => {
+api.get(SEARCH_ENDPOINT, authenticate, (req, res) => {
     try {
         var filter = constructObject(req.query);
         var stories = newsService.getStoriesForFilter(filter);
@@ -164,4 +165,12 @@ function constructObject(filter) {
         };
     }
     return filter;
+}
+
+function authenticate(req, res, next) {
+    if (req.session && req.session.username && req.session.role) {
+        next();
+    } else {
+        res.status(401).send(ERROR401);
+    }
 }
