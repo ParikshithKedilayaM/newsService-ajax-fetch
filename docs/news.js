@@ -91,6 +91,10 @@ function getNewsFromStorage() {
     return news && JSON.parse(news);
 }
 
+function updateStorage(news) {
+    sessionStorage.setItem('_news', JSON.stringify(news));
+}
+
 function errorHandler(err) {
     console.error(err);
 }
@@ -216,7 +220,11 @@ function deleteNewsAPI(news, id) {
         body: JSON.stringify({ id })
     })
     .then((res) => handleError(res))
-    .then(() => newsListAPI())
+    .then(() => {
+        delete news[id];
+        updateStorage(news);
+        reRenderNewsList();
+    })
     .catch((err) => errorHandler(err), setFailedDeleteMessage());
 }
 
@@ -232,7 +240,13 @@ function createNewsAPI(body) {
         body: JSON.stringify(body)
     })
     .then((res) => handleError(res))
-    .then(() => newsListAPI())
+    .then((res) => res.json())
+    .then((data) => {
+        var news = getNewsFromStorage();
+        news[data.id] = body;
+        updateStorage(news);
+        reRenderNewsList();
+    })
     .catch((err) => errorHandler(err));
 }
 
@@ -248,7 +262,12 @@ function updateTitleAPI(id, title) {
         body: JSON.stringify({ id, title })
     })
     .then((res) => handleError(res))
-    .then(() => newsListAPI())
+    .then(() => {
+        var news = getNewsFromStorage();
+        news[id].title = title;
+        updateStorage(news);
+        reRenderNewsList();
+    })
     .catch((err) => errorHandler(err));
 }
 
@@ -264,7 +283,12 @@ function updateContentAPI(id, content) {
         body: JSON.stringify({ id, content })
     })
     .then((res) => handleError(res))
-    .then(() => newsListAPI())
+    .then(() => {
+        var news = getNewsFromStorage();
+        news[id].content = content;
+        updateStorage(news);
+        reRenderNewsList();
+    })
     .catch((err) => errorHandler(err));
 }
 
