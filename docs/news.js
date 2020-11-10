@@ -71,6 +71,16 @@ function getSelectedRadioButton(className) {
     }
 }
 
+function updateTitle(id) {
+    var newTitle = document.getElementById("titleInput").value;
+    updateTitleAPI(id, newTitle);
+}
+
+function updateContent(id) {
+    var newContent = document.getElementById("newsContentInput").value;
+    updateContentAPI(id, newContent);
+}
+
 function redirectToLogin() {
     sessionStorage.clear();
     window.location.replace('/');
@@ -119,17 +129,33 @@ function renderNewsList(news) {
 
 function renderNews(id, news) {
     var newsString = `
-    <h2>${news.title}</h2>
+    <h2 id="title">${news.title}</h2>
     <i> Written by: ${news.author} </i> <br />
     <i> Published on ${news.date} </i>
     <br />
     
-    <p>${news.content}</p><br />
+    <p id="newsContent">${news.content}</p><br />
     <div id="message"></div>`;
     if (news.author === USERNAME && ROLE === 'author') {
-        newsString += `<input type="button" onclick="deleteNews(${id});" value="Delete">`;
+        newsString += `<input type="button" onclick="deleteNews(${id});" value="Delete">
+        <input type="button" onclick="editTitle(${id});" value="Edit Title">
+        <input type="button" onclick="editContent(${id});" value="Edit Content">`;
     }
     setContent(newsString);
+}
+
+function editTitle(id) {
+    var news = getNewsFromStorage()[id];
+    var title = `<input type="text" value="${news.title}" id="titleInput">
+    <input type="button" onclick="updateTitle(${id});" value="Update">`;
+    document.getElementById('title').innerHTML = title;
+}
+
+function editContent(id) {
+    var news = getNewsFromStorage()[id];
+    var content = `<input type="text" value="${news.content}" id="newsContentInput">
+    <input type="button" onclick="updateContent(${id});" value="Update">`;
+    document.getElementById('newsContent').innerHTML = content;
 }
 
 function setFailedDeleteMessage() {
@@ -204,6 +230,38 @@ function createNewsAPI(body) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
+    })
+    .then((res) => handleError(res))
+    .then(() => newsListAPI())
+    .catch((err) => errorHandler(err));
+}
+
+function updateTitleAPI(id, title) {
+    if (ROLE !== 'author' && getNewsFromStorage()[id].author !== USERNAME) {
+        return;
+    }
+    fetch(HOST + EDIT_TITLE_ENDPOINT, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id, title })
+    })
+    .then((res) => handleError(res))
+    .then(() => newsListAPI())
+    .catch((err) => errorHandler(err));
+}
+
+function updateContentAPI(id, content) {
+    if (ROLE !== 'author' && getNewsFromStorage()[id].author !== USERNAME) {
+        return;
+    }
+    fetch(HOST + EDIT_CONTENT_ENDPOINT, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id, content })
     })
     .then((res) => handleError(res))
     .then(() => newsListAPI())
