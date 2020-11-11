@@ -134,8 +134,12 @@ function renderNewsList(news) {
     setContent(newsList);
 }
 
+function backButton() {
+    return `<a href="#" onclick="reRenderNewsList(); return false;"><< Back</a>`;
+}
+
 function renderNews(id, news) {
-    var newsString = `
+    var newsString = backButton() + `
     <h2 id="title">${news.title}</h2>
     <i> Written by: ${news.author} </i> <br />
     <i> Published on ${news.date} </i>
@@ -173,7 +177,7 @@ function setFailedDeleteMessage() {
 }
 
 function renderCreateNewsForm() {
-    var newsForm = `<h2>Enter the story below</h2>
+    var newsForm = backButton() + `<h2>Enter the story below</h2>
         <form onsubmit='event.preventDefault(); createNews();'>
             <label>Title:</label> <input type="text" id="title" /><br />
             <label>Content:</label> <br /><textarea id="storyContent" ></textarea><br />
