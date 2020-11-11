@@ -18,6 +18,7 @@ const ROOT_ENDPOINT = '/',
     LOGIN_ENDPOINT = '/login',
     LOGOUT_ENDPOINT = '/logout',
     ERROR404 = '404: Resource Not Found',
+    ERROR405 = '405: Method Not Allowed',
     ERROR500 = '500: Internal Server Error',
     ERROR401 = '401: User Logged Out / Not Logged In. Please Login!',
     NEWS_STORY_NOT_FOUND = 'NewsStoryNotFound',
@@ -139,7 +140,12 @@ api.post(LOGOUT_ENDPOINT, (req, res) => {
 });
 
 api.all('*', (req, res, next) => {
-    res.status(404).send(ERROR404);
+    if ([CREATE_ENDPOINT, EDIT_TITLE_ENDPOINT, EDIT_CONTENT_ENDPOINT, DELETE_ENDPOINT, 
+        SEARCH_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT].includes(req.url)) {
+        res.status(405).send(ERROR405);
+    } else {
+        res.status(404).send(ERROR404);
+    }
 });
 
 api.use((err, req, res, next) => {

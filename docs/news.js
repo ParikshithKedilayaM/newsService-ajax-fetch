@@ -10,6 +10,9 @@ const HOST = 'http://localhost:3000',
     USERNAME = sessionStorage.getItem('_username');
 
 function initializeContent() {
+    if (!ROLE || !USERNAME) {
+        window.location.replace('/');
+    }
     displayHeader();
     loadNewsList();
 }
