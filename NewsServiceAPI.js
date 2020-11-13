@@ -5,7 +5,7 @@ const express = require('express'),
     Timeout = require('smart-timeout'),
     NewsService = require('./NewsService');
 
-const api = express(),
+const app = express(),
     SHA256 =  new Hashes.SHA256,
     newsService = new NewsService();
 
@@ -34,11 +34,11 @@ const ROOT_ENDPOINT = '/',
     NEWS = '/docs/news.html';
 
 // Inititialize body-parser middleware
-api.use(bodyParser.urlencoded({ extended: true }));
-api.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Initialize session management middleware
-api.use(session({
+app.use(session({
     secret: 'MAGICALEXPRESSKEY',
     resave: true,
     saveUninitialized: true,
@@ -48,36 +48,37 @@ api.use(session({
     }
 }));
 
-api.use((req, res, next) => {
+// CORS middleware
+app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH');
     res.append('Access-Control-Allow-Headers', 'Content-Type');
     next();
 });
 
-api.get(ROOT_ENDPOINT, (req, res) => {
+app.get(ROOT_ENDPOINT, (req, res) => {
     res.sendFile(INDEX, { root: __dirname });
 });
 
-api.get(INDEXJS_ENDPOINT, (req, res) => {
+app.get(INDEXJS_ENDPOINT, (req, res) => {
     res.sendFile(INDEXJS, { root: __dirname });
 });
 
-api.get(NEWS_ENDPOINT, (req, res) => {
+app.get(NEWS_ENDPOINT, (req, res) => {
     res.sendFile(NEWS, { root: __dirname });
 });
 
-api.get(NEWSJS_ENDPOINT, (req, res) => {
+app.get(NEWSJS_ENDPOINT, (req, res) => {
     res.sendFile(NEWSJS, { root: __dirname });
 });
 
-api.post(CREATE_ENDPOINT, authenticate, (req, res) => {
+app.post(CREATE_ENDPOINT, authenticate, (req, res) => {
     var { title, content, author, isPublic, date } = req.body;
     var id = newsService.addStory(title, content, author, isPublic, date);
     res.status(201).send(JSON.stringify({ id }));
 });
 
-api.patch(EDIT_TITLE_ENDPOINT, authenticate, (req, res) => {
+app.patch(EDIT_TITLE_ENDPOINT, authenticate, (req, res) => {
     var { id, title } = req.body;
     try {
         newsService.updateTitle(id, title);
@@ -91,7 +92,7 @@ api.patch(EDIT_TITLE_ENDPOINT, authenticate, (req, res) => {
     }
 });
 
-api.patch(EDIT_CONTENT_ENDPOINT, authenticate, (req, res) => {
+app.patch(EDIT_CONTENT_ENDPOINT, authenticate, (req, res) => {
     var { id, content } = req.body;
     try {
         newsService.updateContent(id, content);
@@ -105,7 +106,7 @@ api.patch(EDIT_CONTENT_ENDPOINT, authenticate, (req, res) => {
     }
 });
 
-api.delete(DELETE_ENDPOINT, authenticate, (req, res) => {
+app.delete(DELETE_ENDPOINT, authenticate, (req, res) => {
     var { id } = req.body;
     try {
         newsService.deleteStory(id);
@@ -119,7 +120,7 @@ api.delete(DELETE_ENDPOINT, authenticate, (req, res) => {
     }
 });
 
-api.get(SEARCH_ENDPOINT, authenticate, (req, res) => {
+app.get(SEARCH_ENDPOINT, authenticate, (req, res) => {
     try {
         var filter = constructObject(req.query);
         var stories = newsService.getStoriesForFilter(filter);
@@ -130,7 +131,7 @@ api.get(SEARCH_ENDPOINT, authenticate, (req, res) => {
 
 });
 
-api.post(LOGIN_ENDPOINT, (req, res) => {
+app.post(LOGIN_ENDPOINT, (req, res) => {
     if (req.body.username === req.body.password) {
         req.session.username = req.body.username;
         req.session.role = req.body.role;
@@ -147,13 +148,15 @@ api.post(LOGIN_ENDPOINT, (req, res) => {
     }
 });
 
-api.post(LOGOUT_ENDPOINT, (req, res) => {
+app.post(LOGOUT_ENDPOINT, (req, res) => {
     req.session.destroy();
     expireToken(req.headers[AUTH_TOKEN]);
     res.status(204).end();
 });
 
-api.all('*', (req, res, next) => {
+// If no endpoints match, the url is matched against endpoints with diffent HTTP methods. 
+// If found, 405 error is thrown, otherwise 404 error is thrown
+app.all('*', (req, res, next) => {
     if ([CREATE_ENDPOINT, EDIT_TITLE_ENDPOINT, EDIT_CONTENT_ENDPOINT, DELETE_ENDPOINT, 
         SEARCH_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT].includes(req.url)) {
         res.status(405).send(ERROR405);
@@ -162,13 +165,20 @@ api.all('*', (req, res, next) => {
     }
 });
 
-api.use((err, req, res, next) => {
+// Any internal exceptions/errors caught are handled here with 500 error
+app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).send(ERROR500);
 });
 
-api.listen(3000);
+app.listen(3000);
 
+/**
+ * This function is used to construct dataRange in the required format for api
+ * 
+ * @returns {*} filter
+ * @param {*} filter 
+ */
 function constructObject(filter) {
     if (filter.startDate !== undefined || filter.endDate !== undefined) {
         filter['dateRange'] = {
@@ -179,6 +189,15 @@ function constructObject(filter) {
     return filter;
 }
 
+/**
+ * This middleware function authenticates the request before proceeding to the next step. 
+ * If authentication fails, 401 error is thrown.
+ * If success next() is invoked.
+ * 
+ * @param {Request} req 
+ * @param {Response} res 
+ * @param {any} next 
+ */
 function authenticate(req, res, next) {
     var token = req.headers[AUTH_TOKEN];
     if (token && authTokens[token] && Timeout.exists(token) && Timeout.pending(token) &&
@@ -191,6 +210,13 @@ function authenticate(req, res, next) {
     }
 }
 
+/**
+ * Function to generate 256 bit SHA based token. 
+ * Secured Salted SHA-246 bit encryption logic is implemented to generate token.
+ * 
+ * @returns {string} token
+ * @param {Request} req 
+ */
 function generateAuthToken(req) {
     var username = req.body.username;
     var role = req.body.role;
@@ -199,6 +225,11 @@ function generateAuthToken(req) {
     return SHA256.hex(username + role + time + salt);
 }
 
+/**
+ * Function that deletes the token and clears timer associated with it
+ * 
+ * @param {string} token 
+ */
 function expireToken(token) {
     delete authTokens[token];
     Timeout.clear(token, erase = true);
