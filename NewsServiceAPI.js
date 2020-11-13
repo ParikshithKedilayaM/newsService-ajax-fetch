@@ -1,10 +1,15 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
+    Hashes = require('jshashes'),
+    Timeout = require('smart-timeout'),
     NewsService = require('./NewsService');
 
 const api = express(),
+    SHA256 =  new Hashes.SHA256,
     newsService = new NewsService();
+
+var authTokens = {};
 
 const ROOT_ENDPOINT = '/',
     INDEXJS_ENDPOINT = '/index.js',
@@ -22,6 +27,7 @@ const ROOT_ENDPOINT = '/',
     ERROR500 = '500: Internal Server Error',
     ERROR401 = '401: User Logged Out / Not Logged In. Please Login!',
     NEWS_STORY_NOT_FOUND = 'NewsStoryNotFound',
+    AUTH_TOKEN = 'auth-token',
     INDEX = '/docs/index.html',
     INDEXJS = '/docs/index.js',
     NEWSJS = '/docs/news.js',
@@ -57,11 +63,11 @@ api.get(INDEXJS_ENDPOINT, (req, res) => {
     res.sendFile(INDEXJS, { root: __dirname });
 });
 
-api.get(NEWS_ENDPOINT, authenticate, (req, res) => {
+api.get(NEWS_ENDPOINT, (req, res) => {
     res.sendFile(NEWS, { root: __dirname });
 });
 
-api.get(NEWSJS_ENDPOINT, authenticate, (req, res) => {
+api.get(NEWSJS_ENDPOINT, (req, res) => {
     res.sendFile(NEWSJS, { root: __dirname });
 });
 
@@ -128,6 +134,13 @@ api.post(LOGIN_ENDPOINT, (req, res) => {
     if (req.body.username === req.body.password) {
         req.session.username = req.body.username;
         req.session.role = req.body.role;
+        var token = generateAuthToken(req);
+        authTokens[token] = { 
+            username: req.body.username,
+            role: req.body.role
+        };
+        res.set('Auth-Token', token);
+        Timeout.create(token, () => expireToken(token), 3 * 60 * 1000);
         res.status(204).end();
     } else {
         res.status(401).end();
@@ -136,6 +149,7 @@ api.post(LOGIN_ENDPOINT, (req, res) => {
 
 api.post(LOGOUT_ENDPOINT, (req, res) => {
     req.session.destroy();
+    expireToken(req.headers[AUTH_TOKEN]);
     res.status(204).end();
 });
 
@@ -166,9 +180,26 @@ function constructObject(filter) {
 }
 
 function authenticate(req, res, next) {
-    if (req.session && req.session.username && req.session.role) {
+    var token = req.headers[AUTH_TOKEN];
+    if (token && authTokens[token] && Timeout.exists(token) && Timeout.pending(token) &&
+        req.session && req.session.username === authTokens[token].username &&
+        req.session.role === authTokens[token].role) {
+        Timeout.restart(token);
         next();
     } else {
         res.status(401).send(ERROR401);
     }
+}
+
+function generateAuthToken(req) {
+    var username = req.body.username;
+    var role = req.body.role;
+    var time = new Date().toString();
+    var salt = Math.floor((Math.random() * 10000) + 1);
+    return SHA256.hex(username + role + time + salt);
+}
+
+function expireToken(token) {
+    delete authTokens[token];
+    Timeout.clear(token, erase = true);
 }

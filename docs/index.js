@@ -68,6 +68,7 @@ function loginAPI(username, password, role) {
         if (res.ok) {
             sessionStorage.setItem('_username', username);
             sessionStorage.setItem('_role', role);
+            sessionStorage.setItem('_auth-key', res.headers.get('auth-token'));
             window.location.replace('/news');
         } else {
             setFailedLoginMessage();

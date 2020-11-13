@@ -6,15 +6,18 @@ const HOST = 'http://localhost:3000',
     DELETE_ENDPOINT = '/delete',
     SEARCH_ENDPOINT = '/search',
     LOGIN_ENDPOINT = '/login',
+    AUTH_TOKEN = sessionStorage.getItem('_auth-key'),
     ROLE = sessionStorage.getItem('_role'),
     USERNAME = sessionStorage.getItem('_username');
 
 function initializeContent() {
-    if (!ROLE || !USERNAME) {
+    sessionStorage.removeItem('_auth-key');
+    if (!ROLE || !USERNAME || !AUTH_TOKEN) {
         window.location.replace('/');
+    } else {
+        displayHeader();
+        loadNewsList();
     }
-    displayHeader();
-    loadNewsList();
 }
 
 function logout() {
@@ -199,7 +202,8 @@ function renderCreateNewsForm() {
 
 function logoutAPI() {
     fetch(HOST + LOGOUT_ENDPOINT, {
-        method: 'POST'
+        method: 'POST',
+        'Auth-Token': AUTH_TOKEN
     })
     .then((res) => handleError(res))
     .then(() => redirectToLogin())
@@ -207,7 +211,12 @@ function logoutAPI() {
 }
 
 function newsListAPI() {
-    fetch(HOST + SEARCH_ENDPOINT)
+    fetch(HOST + SEARCH_ENDPOINT, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Auth-Token': AUTH_TOKEN
+        },
+    })
     .then((res) => handleError(res))
     .then((res) => res.json())
     .then((data) => createNewsList(data))
@@ -222,7 +231,8 @@ function deleteNewsAPI(news, id) {
     fetch(HOST + DELETE_ENDPOINT, {
         method: 'DELETE',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Auth-Token': AUTH_TOKEN
         },
         body: JSON.stringify({ id })
     })
@@ -242,7 +252,8 @@ function createNewsAPI(body) {
     fetch(HOST + CREATE_ENDPOINT, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Auth-Token': AUTH_TOKEN
         },
         body: JSON.stringify(body)
     })
@@ -264,7 +275,8 @@ function updateTitleAPI(id, title) {
     fetch(HOST + EDIT_TITLE_ENDPOINT, {
         method: 'PATCH',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Auth-Token': AUTH_TOKEN
         },
         body: JSON.stringify({ id, title })
     })
@@ -273,7 +285,7 @@ function updateTitleAPI(id, title) {
         var news = getNewsFromStorage();
         news[id].title = title;
         updateStorage(news);
-        reRenderNewsList();
+        renderNews(id, news[id]);
     })
     .catch((err) => errorHandler(err));
 }
@@ -285,7 +297,8 @@ function updateContentAPI(id, content) {
     fetch(HOST + EDIT_CONTENT_ENDPOINT, {
         method: 'PATCH',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Auth-Token': AUTH_TOKEN
         },
         body: JSON.stringify({ id, content })
     })
@@ -294,7 +307,7 @@ function updateContentAPI(id, content) {
         var news = getNewsFromStorage();
         news[id].content = content;
         updateStorage(news);
-        reRenderNewsList();
+        renderNews(id, news[id]);
     })
     .catch((err) => errorHandler(err));
 }
