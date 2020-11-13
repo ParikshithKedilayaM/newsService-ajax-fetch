@@ -2,10 +2,18 @@
   "name": "lab5start",
   "version": "1.0.0",
   "description": "Activity 1",
-  "main": "NewsService.js",
+  "main": "NewsServiceAPI.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node NewsServiceAPI.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "jshashes": "^1.0.8",
+    "smart-timeout": "^2.5.0"
+  }
 }
