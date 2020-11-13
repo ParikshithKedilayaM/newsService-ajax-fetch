@@ -1,0 +1,801 @@
+{
+	"info": {
+		"_postman_id": "93a3187f-6532-4963-a4b5-e89b1e226e2a",
+		"name": "NewsService_test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost:3000/create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5464e195-62fd-4782-8232-6bd7375932b3",
+						"exec": [
+							"pm.test(\"create news\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"    var resp = pm.response.json();\r",
+							"    pm.collectionVariables.set('id', resp.id);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "aa2d0585-e1d6-4222-b96a-feca74f685ec",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\" : \"New Title\",\r\n    \"author\" : \"New Author\",\r\n    \"content\" : \"New Content\",\r\n    \"date\" : \"10/31/2020\",\r\n    \"isPublic\" : true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/create",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"create"
+					]
+				},
+				"description": "Creates a new story, use POST, Raw for Body and paste the payload"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/editTitle",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f1eade50-1c58-4d3e-9625-96b479906411",
+						"exec": [
+							"pm.test(\"edit title\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": {{id}},\r\n    \"title\": \"Update title\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/editTitle",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"editTitle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/editTitle Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ffd89331-7860-417f-9dff-9df26da5928b",
+						"exec": [
+							"pm.test(\"edit title invalid id\", () => {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 160,\r\n    \"title\": \"Update title\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/editTitle",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"editTitle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/editContent",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a60b9cd0-0649-47fe-a73a-dbaa832d432b",
+						"exec": [
+							"pm.test(\"edit content\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": {{id}},\r\n    \"content\": \"Update Content\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/editContent",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"editContent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/editContent Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b44047be-e038-4b19-8882-aa8b4ce82c20",
+						"exec": [
+							"pm.test(\"edit content invalid id\", () => {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 160,\r\n    \"content\": \"Update Content\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/editContent",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"editContent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/search a-b-c",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4b383a61-61b7-4d9e-aba6-9aada59936e5",
+						"exec": [
+							"pm.test(\"search a-b-c\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/search?title=Update title&author=New Author&startDate=10/30/2020&endDate=10/10/2021",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "Update title"
+						},
+						{
+							"key": "author",
+							"value": "New Author"
+						},
+						{
+							"key": "startDate",
+							"value": "10/30/2020"
+						},
+						{
+							"key": "endDate",
+							"value": "10/10/2021"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/search a",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "15f4d8c2-95df-4f27-8a6c-d3945977973a",
+						"exec": [
+							"pm.test(\"search a\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/search?title=Update title",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "Update title"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/search b",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "36de5001-9253-431c-ba46-89b3d69e20c5",
+						"exec": [
+							"pm.test(\"search b\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/search?author=New Author",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "author",
+							"value": "New Author"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/search c",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "8a37ac06-bc51-40e4-a501-c6ce9ceab258",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "94887caf-2c1e-494f-94b6-41fb05e2071e",
+						"exec": [
+							"pm.test(\"search c\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/search?startDate=10/30/2020&endDate=10/10/2021",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "startDate",
+							"value": "10/30/2020"
+						},
+						{
+							"key": "endDate",
+							"value": "10/10/2021"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/search a-c",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7ddcf3e7-ec9c-40dc-ab8c-f411d2d3e7c4",
+						"exec": [
+							"pm.test(\"search a-c\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/search?title=Update title&startDate=10/30/2020&endDate=10/10/2021",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "Update title"
+						},
+						{
+							"key": "author",
+							"value": "New Author",
+							"disabled": true
+						},
+						{
+							"key": "startDate",
+							"value": "10/30/2020"
+						},
+						{
+							"key": "endDate",
+							"value": "10/10/2021"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/search b-c",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0c121110-1e60-42e4-ae0e-9b2a3a5f0083",
+						"exec": [
+							"pm.test(\"search b-c\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/search?author=New Author&startDate=10/30/2020&endDate=10/10/2021",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "Update title",
+							"disabled": true
+						},
+						{
+							"key": "author",
+							"value": "New Author"
+						},
+						{
+							"key": "startDate",
+							"value": "10/30/2020"
+						},
+						{
+							"key": "endDate",
+							"value": "10/10/2021"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/search a-b",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3e4fc236-0c53-4bd5-b9d7-2974cfa52cef",
+						"exec": [
+							"pm.test(\"search a-b\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/search?title=Update title&author=New Author",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "Update title"
+						},
+						{
+							"key": "author",
+							"value": "New Author"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ec9b4422-4a9f-475b-8c2c-98ab668317ea",
+						"exec": [
+							"pm.test(\"delete news\", () => {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": {{id}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/delete",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"delete"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "16",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/delete Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "563fc81d-f320-4d61-8453-d82f8b134d0a",
+						"exec": [
+							"pm.test(\"delete news invalid id\", () => {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 160\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/delete",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"delete"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "16",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{auth_token}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Auth-Token",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "473c74ee-e552-4294-87a2-78f8160c370e",
+				"type": "text/javascript",
+				"exec": [
+					"const login = {",
+					"    url: 'http://localhost:3000/login',",
+					"    method: 'POST',",
+					"    headers: {",
+					"            'Content-Type': 'application/json'",
+					"    },",
+					"    body: {",
+					"        mode: 'urlencoded',",
+					"        urlencoded: [",
+					"            { key: \"username\", value: \"postman\" },",
+					"            { key: \"password\", value: \"postman\" },",
+					"            { key: \"role\", value: \"author\" }",
+					"        ]",
+					"    }",
+					"}",
+					"pm.sendRequest(login, function (err, response) {",
+					"    if (err) {",
+					"        console.log(err);",
+					"    } else {",
+					"        var authToken = response.headers.get('Auth-Token');",
+					"        pm.collectionVariables.set('auth_token', authToken);",
+					"    }",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "78da9356-152d-40fd-b26b-3fbee1cf74aa",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "3dbd0eb8-b7e5-49d0-8884-613fd3134d41",
+			"key": "auth_token",
+			"value": ""
+		},
+		{
+			"id": "0c4f3f83-2b43-4df8-a0d4-46223335063f",
+			"key": "id",
+			"value": ""
+		}
+	],
+	"protocolProfileBehavior": {}
+}
