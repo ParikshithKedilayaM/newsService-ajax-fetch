@@ -167,15 +167,15 @@ function editTitle(id) {
 
 function editContent(id) {
     var news = getNewsFromStorage()[id];
-    var content = `<input type="text" value="${news.content}" id="newsContentInput">
+    var content = `<textarea id="newsContentInput">${news.content}</textarea>
     <input type="button" onclick="updateContent(${id});" value="Update">`;
     document.getElementById('newsContent').innerHTML = content;
 }
 
-function setFailedDeleteMessage() {
+function setFailedMessage(msg) {
     var message = document.getElementById('message');
     if (message !== undefined || message !== null) {
-        message.innerText = 'Failed to delete news. Try again!';
+        message.innerText = msg;
     }
 }
 
@@ -190,6 +190,7 @@ function renderCreateNewsForm() {
             <br />
             <label>Date: </label><input type="datetime-local" id="date" required />
             <br />
+            <div id="message"></div>
             <input type="submit" value="Save" />
         </form>
         <form onsubmit='event.preventDefault(); reRenderNewsList();'>
@@ -225,7 +226,7 @@ function newsListAPI() {
 
 function deleteNewsAPI(news, id) {
     if (ROLE !== 'author' || USERNAME !== news[id].author) {
-        setFailedDeleteMessage();
+        setFailedMessage('Failed to delete news. Try again!');
         return;
     }
     fetch(HOST + DELETE_ENDPOINT, {
@@ -242,7 +243,7 @@ function deleteNewsAPI(news, id) {
         updateStorage(news);
         reRenderNewsList();
     })
-    .catch((err) => errorHandler(err), setFailedDeleteMessage());
+    .catch((err) => errorHandler(err), setFailedMessage('Failed to delete news. Try again!'));
 }
 
 function createNewsAPI(body) {
@@ -265,11 +266,11 @@ function createNewsAPI(body) {
         updateStorage(news);
         reRenderNewsList();
     })
-    .catch((err) => errorHandler(err));
+    .catch((err) => errorHandler(err), setFailedMessage('Failed to create news. Try again!'));
 }
 
 function updateTitleAPI(id, title) {
-    if (ROLE !== 'author' && getNewsFromStorage()[id].author !== USERNAME) {
+    if (ROLE !== 'author' || getNewsFromStorage()[id].author !== USERNAME) {
         return;
     }
     fetch(HOST + EDIT_TITLE_ENDPOINT, {
@@ -287,11 +288,11 @@ function updateTitleAPI(id, title) {
         updateStorage(news);
         renderNews(id, news[id]);
     })
-    .catch((err) => errorHandler(err));
+    .catch((err) => errorHandler(err), setFailedMessage('Failed to update title. Try again!'));
 }
 
 function updateContentAPI(id, content) {
-    if (ROLE !== 'author' && getNewsFromStorage()[id].author !== USERNAME) {
+    if (ROLE !== 'author' || getNewsFromStorage()[id].author !== USERNAME) {
         return;
     }
     fetch(HOST + EDIT_CONTENT_ENDPOINT, {
@@ -309,7 +310,7 @@ function updateContentAPI(id, content) {
         updateStorage(news);
         renderNews(id, news[id]);
     })
-    .catch((err) => errorHandler(err));
+    .catch((err) => errorHandler(err), setFailedMessage('Failed to update content. Try again!'));
 }
 
 function handleError(res) {
